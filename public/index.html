@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1f5c46">
+<title>Một Ngày Làm Tổ Bồi Thường</title>
+<link rel="stylesheet" href="vendor/fonts.css">
+<style>
+:root{
+  --bg:#dfe8e1; --panel:#fbfdf9; --ink:#142019; --line:#142019; --muted:#56655b;
+  --seal:#c8102e; --vest:#f2c230; --file:#1f5c46; --ok:#2e8a57;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#0f1a15; --panel:#18261f; --ink:#e5efe8; --line:#e5efe8; --muted:#9db3a5; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --bg:#0f1a15; --panel:#18261f; --ink:#e5efe8; --line:#e5efe8; --muted:#9db3a5; color-scheme:dark; }
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#app{position:relative;width:100%;height:100%;max-width:640px;margin:0 auto;overflow:hidden;background:#bfdcef}
+#cv{display:block;width:100%;height:100%;touch-action:none}
+#ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--vest);outline-offset:2px}
+
+#hud{position:absolute;left:0;right:0;top:0;padding:8px 8px 0;pointer-events:none;display:flex;flex-direction:column;gap:6px;z-index:5}
+.box{background:var(--panel);border:2px solid var(--line);border-radius:3px;box-shadow:3px 3px 0 var(--line)}
+.top{display:flex;align-items:stretch}
+.clock{background:var(--file);color:#fff;padding:6px 10px;font-weight:900;font-size:26px;line-height:1;font-variant-numeric:tabular-nums;display:flex;flex-direction:column;justify-content:center;min-width:92px}
+.clock small{font-size:10px;font-weight:700;opacity:.85;margin-top:3px;white-space:nowrap}
+.bars{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:4px 8px;padding:6px 8px}
+.bar{font-size:10px;font-weight:700}
+.bar .t{height:8px;border:1.5px solid var(--line);margin-top:2px}
+.bar .f{height:100%;background:var(--ok);transition:width .2s}
+.bar.low .f{background:var(--seal)}
+.score{grid-column:1/-1;display:flex;justify-content:space-between;gap:6px;font-size:11px;color:var(--muted);font-weight:700}
+.score b{color:var(--ink);font-size:13px}
+#task{padding:6px 10px;font-size:12px}
+#task b{font-size:13px}
+.kind{display:inline-block;font-size:10px;font-weight:700;background:var(--file);color:#fff;padding:1px 6px;border-radius:2px;margin-left:4px;vertical-align:2px}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.chips i{font-style:normal;font-size:11px;font-weight:700;border:1.5px solid var(--line);padding:1px 7px;border-radius:999px;opacity:.55}
+.chips i.ok{background:var(--ok);border-color:var(--ok);color:#fff;opacity:1}
+.chips i.next{opacity:1;background:var(--vest);color:#142019;border-color:#142019}
+
+#toast{position:absolute;left:10px;right:10px;top:184px;margin:0 auto;max-width:440px;background:#142019;color:#fff;border:2px solid var(--vest);padding:8px 12px;font-size:13px;font-weight:700;border-radius:3px;opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .2s;pointer-events:none;z-index:6;text-align:center}
+#toast.on{opacity:1;transform:none}
+
+#ctrl{position:absolute;right:12px;bottom:16px;display:flex;align-items:flex-end;gap:10px;z-index:5}
+#ctrl button{border:2.5px solid #142019;box-shadow:3px 3px 0 #142019;font-weight:900;color:#142019}
+#ctrl button:active{transform:translate(3px,3px);box-shadow:none}
+#bDash{width:64px;height:64px;border-radius:50%;background:var(--vest);font-size:15px}
+#bDash.cd{opacity:.45}
+#bDash.alert{animation:pulse .5s infinite alternate}
+#bAct{min-width:128px;max-width:170px;height:70px;padding:0 12px;border-radius:6px;background:#fff;font-size:14px}
+#bAct.live{background:var(--seal);color:#fff}
+#bAct:disabled{opacity:.55}
+@keyframes pulse{to{transform:scale(1.12)}}
+
+#side{position:absolute;left:10px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:5}
+#side button{width:42px;height:42px;border-radius:50%;border:2px solid #142019;background:var(--panel);color:var(--ink);box-shadow:2px 2px 0 #142019;font-size:17px;position:relative;padding:0}
+#side button:active{transform:translate(2px,2px);box-shadow:none}
+#side .dot{position:absolute;right:-3px;top:-3px;background:var(--seal);color:#fff;font-size:10px;font-weight:900;min-width:16px;height:16px;border-radius:8px;display:grid;place-items:center;padding:0 3px}
+#chatlog{position:absolute;left:62px;bottom:18px;max-width:calc(100% - 290px);min-width:120px;z-index:4;pointer-events:none;display:flex;flex-direction:column;gap:3px}
+#chatlog div{background:rgba(20,32,25,.78);color:#fff;font-size:12px;line-height:1.35;padding:3px 8px;border-radius:3px;transition:opacity .6s;word-break:break-word}
+#chatlog div b{color:var(--vest)}
+#chatlog div.sys{background:rgba(31,92,70,.85)}
+#chatbar{position:absolute;left:8px;right:8px;bottom:12px;display:flex;gap:6px;z-index:25}
+#chatbar[hidden]{display:none}
+#chatbar input{flex:1;font:600 16px 'Be Vietnam Pro',sans-serif;padding:12px;border:2px solid #142019;border-radius:3px;background:var(--panel);color:var(--ink);min-width:0}
+#chatbar button{border:2px solid #142019;background:var(--seal);color:#fff;font-weight:900;padding:0 16px;border-radius:3px}
+
+#modal{position:absolute;inset:0;background:rgba(10,18,14,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px 12px 18px;z-index:20}
+#modal[hidden]{display:none}
+.paper{position:relative;width:100%;max-width:500px;max-height:84%;overflow:auto;background:var(--panel);border:2px solid var(--line);box-shadow:5px 5px 0 var(--line);padding:16px 16px 14px}
+.mtag{font-size:11px;font-weight:900;color:var(--seal);letter-spacing:.3px}
+.mtitle{font-size:20px;font-weight:900;margin:2px 0 8px;line-height:1.2;padding-right:96px}
+.paper p{margin:6px 0;font-size:15px;line-height:1.5}
+.muted{color:var(--muted);font-size:13px!important}
+.paper ol{margin:6px 0;padding-left:20px;font-size:14px;line-height:1.55}
+#mbtns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+#mbtns button{border:2px solid var(--line);background:var(--panel);color:var(--ink);padding:12px 14px;font-weight:700;font-size:14px;line-height:1.4;text-align:left;box-shadow:2px 2px 0 var(--line);border-radius:3px}
+#mbtns button:active{transform:translate(2px,2px);box-shadow:none}
+#mbtns button.big{background:var(--seal);color:#fff;text-align:center;font-size:20px;font-weight:900;padding:16px}
+.stamp{position:absolute;right:14px;top:14px;border:3px solid var(--seal);color:var(--seal);font-weight:900;font-size:14px;padding:4px 10px;border-radius:4px;transform:rotate(-12deg) scale(2.2);opacity:0;pointer-events:none}
+.stamp.on{animation:stamp .35s .1s forwards}
+@keyframes stamp{to{opacity:.92;transform:rotate(-12deg) scale(1)}}
+.clue{border-left:4px solid var(--file);padding:6px 10px;margin:6px 0;background:rgba(31,92,70,.1);font-size:14px;line-height:1.5}
+.meter{position:relative;height:46px;border:2px solid var(--line);margin:10px 0 6px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(10% - 1px),var(--muted) calc(10% - 1px),var(--muted) 10%)}
+.zone{position:absolute;top:0;bottom:0;background:rgba(46,138,87,.6)}
+.needle{position:absolute;top:-7px;bottom:-7px;width:4px;margin-left:-2px;background:var(--seal)}
+.mash{height:20px;border:2px solid var(--line);margin:10px 0 4px}
+#mfill{height:100%;width:35%;background:var(--ok)}
+.lb{width:100%;border-collapse:collapse;font-size:14px}
+.lb td{padding:6px 4px;border-bottom:1px solid var(--muted)}
+.lb td:last-child,.lb td:nth-child(3){text-align:right;font-weight:900}
+.lb tr.me td{background:rgba(242,194,48,.25)}
+.shake{animation:shake .28s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.screen{position:absolute;inset:0;z-index:30;background:var(--bg);overflow:auto;padding:24px 22px;display:flex;flex-direction:column;gap:12px;touch-action:pan-y}
+.screen[hidden]{display:none}
+.folder{background:var(--file);color:#fff;padding:20px 18px 18px;border:2px solid var(--line);box-shadow:5px 5px 0 var(--line);position:relative}
+.folder .lbl{display:inline-block;background:#fff;color:#142019;font-size:12px;font-weight:700;padding:3px 8px;border:1.5px solid #142019}
+.folder h1{font-size:38px;line-height:1.03;font-weight:900;margin:12px 0 8px;letter-spacing:-1px;padding-right:56px}
+.folder p{margin:0;font-size:14px;line-height:1.5;opacity:.92}
+.folder .seal{position:absolute;right:14px;top:14px;width:62px;height:62px;border:3px solid var(--vest);border-radius:50%;display:grid;place-items:center;color:var(--vest);font-weight:900;font-size:13px;transform:rotate(14deg);text-align:center;line-height:1.05}
+.card{background:var(--panel);border:2px solid var(--line);box-shadow:3px 3px 0 var(--line);padding:12px 14px;font-size:14px;line-height:1.5}
+.card label{display:block;font-weight:700;font-size:13px;margin-bottom:4px}
+.card input{width:100%;font:700 16px 'Be Vietnam Pro',sans-serif;padding:10px;border:2px solid var(--line);border-radius:3px;background:var(--bg);color:var(--ink)}
+#roll{font-size:22px;font-weight:900;margin:2px 0 4px;min-height:30px}
+.cta{border:2.5px solid #142019;box-shadow:4px 4px 0 #142019;background:var(--vest);color:#142019;font-weight:900;font-size:18px;padding:15px;border-radius:3px}
+.cta:active{transform:translate(4px,4px);box-shadow:none}
+.cta.red{background:var(--seal);color:#fff}
+.tiny{font-size:12px;color:var(--muted);margin:0;line-height:1.5}
+#end h2{font-size:32px;font-weight:900;margin:0;line-height:1.1}
+.stats{display:grid;grid-template-columns:1fr auto;gap:4px 12px}
+.stats b{text-align:right}
+#loading{position:absolute;inset:0;display:grid;place-items:center;background:var(--bg);z-index:40;font-weight:900}
+#loading[hidden]{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="cv"></canvas>
+  <canvas id="ov"></canvas>
+
+  <div id="hud">
+    <div class="box top">
+      <div class="clock"><span id="clock">07:30</span><small id="status">Ca sáng</small></div>
+      <div class="bars">
+        <div class="bar" id="b1">⚡ Năng lượng<div class="t"><div class="f" id="be"></div></div></div>
+        <div class="bar" id="b2">🍜 No bụng<div class="t"><div class="f" id="bf"></div></div></div>
+        <div class="bar" id="b3">🧘 Kiên nhẫn<div class="t"><div class="f" id="bp"></div></div></div>
+        <div class="score"><span id="roleName"></span><span>Xong <b id="done">0</b> · Uy tín <b id="rep">50</b></span></div>
+      </div>
+    </div>
+    <div class="box" id="task"></div>
+  </div>
+  <div id="toast"></div>
+
+  <div id="side">
+    <button id="bSound" aria-label="Bật tắt âm thanh">🔊</button>
+    <button id="bChat" aria-label="Chat">💬</button>
+    <button id="bBoard" aria-label="Bảng xếp hạng">🏆<span class="dot" id="online" hidden>0</span></button>
+    <button id="bInvite" aria-label="Rủ bạn vào xóm">🔗</button>
+  </div>
+  <div id="chatlog"></div>
+  <div id="chatbar" hidden><input id="chatIn" maxlength="120" placeholder="Nói gì đó với cả xóm…" autocomplete="off"><button id="chatSend">Gửi</button></div>
+
+  <div id="ctrl">
+    <button id="bDash" aria-label="Né">NÉ</button>
+    <button id="bAct" disabled>—</button>
+  </div>
+
+  <div id="modal" hidden>
+    <div class="paper" id="paper">
+      <div class="mtag" id="mtag"></div>
+      <div class="mtitle" id="mtitle"></div>
+      <div id="mbody"></div>
+      <div id="mbtns"></div>
+      <div class="stamp" id="mstamp"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="title">
+    <div class="folder">
+      <span class="lbl">Hồ sơ GPMB · Lưu hành nội bộ</span>
+      <div class="seal">TỔ<br>BỒI<br>THƯỜNG</div>
+      <h1>Một ngày làm tổ bồi thường</h1>
+      <p>7:30 vào ca. Kiểm đếm, xác minh nguồn gốc đất, xử lý lấn chiếm, đất xen kẹt, tranh chấp thừa kế. Né chó, né khiếu nại, né triều cường. 17:00 tan ca, nếu còn đứng được.</p>
+    </div>
+    <div class="card" id="prof"></div>
+    <div class="card">
+      <label for="pname">Tên cán bộ (hiện cho người cùng xóm)</label>
+      <input id="pname" maxlength="20" autocomplete="off">
+      <p class="tiny" id="netInfo" style="margin-top:6px"></p>
+    </div>
+    <div class="card">
+      <div class="mtag">Bốc thăm vị trí công tác</div>
+      <div id="roll">Chưa bốc</div>
+      <div id="rdesc" class="tiny">Không được chọn. Phòng tổ chức quay số.</div>
+    </div>
+    <button class="cta" id="bRoll">🎲 Bốc thăm</button>
+    <button class="cta red" id="bStart" hidden>Vào ca 7:30</button>
+    <p class="tiny" id="voiceInfo"></p>
+    <p class="tiny">Điện thoại: chạm và kéo trên bản đồ để đi. Máy tính: WASD hoặc mũi tên để đi, Space tương tác, Shift né, T để chat.</p>
+    <p class="tiny">Nhân vật, địa chỉ là hư cấu. Cách xử lý hồ sơ phỏng theo Luật Đất đai 2024 cho vui, không thay thẩm định thật.</p>
+  </div>
+
+  <div class="screen" id="end" hidden>
+    <div class="mtag">Báo cáo cuối ngày</div>
+    <h2 id="eTitle"></h2>
+    <p class="tiny" id="eSub" style="font-size:15px;color:var(--ink)"></p>
+    <div class="card stats" id="eStats"></div>
+    <button class="cta red" id="bAgain">Làm thêm một ngày</button>
+  </div>
+  <div id="loading">Đang dựng khu phố…</div>
+</div>
+<script src="vendor/three.min.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
